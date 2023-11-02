@@ -12,7 +12,6 @@ const Session = () => {
   const { user } = useUser();
   const navigate = useNavigate();
   const [messages, setMessages] = useState<string[]>([]);
-  // const [count, setCount] = useState(0);
   const [participants, setParticipants] = useState<string[] | null>(null);
   // todo: fix callback not running on another tab
   const [bothJoined, setBothJoined] = useState(!!rejoined);
@@ -32,11 +31,7 @@ const Session = () => {
       .then(data => {
         const { messages, user1, user2 } = data;
         const participants = [user1, user2];
-        console.log(
-          'set initial messages participants',
-          messages,
-          participants
-        );
+
         setMessages(messages);
         setParticipants(participants);
       })
@@ -51,19 +46,17 @@ const Session = () => {
       const callback: SubscriptionCallback = data => {
         const { messages, user1, user2 } = data.record;
         const participants = [user1, user2];
-        console.log('session subscription fires:', messages, participants);
+
         if (participants.every(p => !!p) && participants.length >= 2)
           setBothJoined(true);
 
         setParticipants(participants);
         setMessages(messages);
-        // setCount(0);
       };
 
       await watchSession(sessionId, callback);
-      console.log('watching session');
+
       await updateClientId(user.id);
-      console.log('client id updated');
 
       // Add user to session
       if (!sessionId || !user || !user.session_seat) return;

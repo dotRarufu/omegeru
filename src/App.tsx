@@ -17,7 +17,6 @@ const App = () => {
     console.log('session id:', user.session_id);
     getSession(user.session_id)
       .then(session => {
-        console.log('join back in session:', session);
         navigate('/s/' + session.id + '/rejoined');
       })
       .catch(console.info);
@@ -28,8 +27,6 @@ const App = () => {
 
     const collection = pb.collection(Collections.User);
     await collection.subscribe<UserRecord>(user.id, data => {
-      console.log('user record updates: ', data);
-
       const {
         record: { session_id },
       } = data;
@@ -38,11 +35,10 @@ const App = () => {
 
       // Clean up
       void pb.collection(Collections.User).unsubscribe(user.id);
-      // deleteQueuedUser(queueId).catch(console.info);
 
       navigate('/s/' + session_id);
     });
-    console.log('watching user record');
+
     await createQueuedUser(user.id);
     console.log('in queue:', user.id);
   };

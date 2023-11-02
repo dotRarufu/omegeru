@@ -37,69 +37,14 @@ onRealtimeDisconnectRequest(e => {
     sessionRecord.set('user2', '');
 
   $app.dao().saveRecord(sessionRecord);
-
-  // // Mark user as disconnected
-  // record.set('is_connected', false);
-  // $app.dao().saveRecord(record);
-
-  // // Get session record
-  // const userSession = record.getString('session_id');
-  // const sessionRecord = $app.dao().findRecordById('session', userSession);
-
-  // if (!sessionRecord)
-  //   console.log(
-  //     `User${record.id} was connected to a non existent session (${userSession})`
-  //   );
-
-  // // Get session participants
-  // const participantRecords = $app
-  //   .dao()
-  //   .findRecordsByFilter(
-  //     'user', // collection
-  //     `session_id = '${userSession}'`, // filter
-  //     '', // sort
-  //     0, // limit
-  //     0 // limit
-  //   )
-  //   .filter(v => v !== undefined);
-
-  // const bothDisconnected = participantRecords
-  //   .map(p => p.getBool('is_connected'))
-  //   .every(v => v);
-
-  // if (!bothDisconnected) return;
-
-  // // Delete session record
-  // $app.dao().deleteRecord(sessionRecord);
-
-  // // Remove participants' session id
-  // participantRecords.forEach(p => p.set('session_id', ''));
 });
-
-// onRealtimeConnectRequest(e => {
-//   console.log('====CONNECT====');
-//   const a = e.httpContext.request()?.context();
-//   // console.log('basic auth:', a);
-//   const authRecord = e.client.get('authRecord') ;
-//   const admin = e.client.get('admin') ;
-//   const requestedInfo = $apis.requestInfo(e.httpContext)?.authRecord || {
-//     undefined: 'undefined',
-//   };
-
-//   console.log(`authRecord: ${authRecord}`);
-//   console.log(`admin: ${admin}`);
-//   console.log(`requestedInfo:`);
-//   console.log(Object.keys(requestedInfo));
-
-//   console.log(e.client.id());
-// });
 
 onModelAfterCreate(e => {
   console.log('1 new queued user created: ' + e.model.id);
   const queuedUsers = $app.dao()?.findRecordsByExpr('queued_user');
-  // console.log('raw length:' + queuedUsers.length.toString());
+
   const filtered = queuedUsers.filter(v => v !== undefined);
-  // console.log('filtered length:' + filtered.length.toString());
+
   if (filtered.length < 2) return;
 
   const queued1 = queuedUsers[0];
