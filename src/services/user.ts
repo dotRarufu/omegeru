@@ -27,3 +27,24 @@ export const getUser = async (id: string) => {
 
   return user;
 };
+
+export const updateClientId = async (userId: string, clientId: string) => {
+  const collection = pb.collection(Collections.User);
+  const data: Pick<UserRecord, 'client_id'> = {
+    client_id: clientId,
+  };
+  await collection.update<UserResponse>(userId, data);
+  console.log(`${userId} is now client ${clientId}`);
+};
+
+export const updateIsConnected = async (
+  userId: string,
+  isConnected: boolean
+) => {
+  const collection = pb.collection(Collections.User);
+  const data: Pick<UserRecord, 'is_connected'> = {
+    is_connected: isConnected,
+  };
+  await collection.update<UserResponse>(userId, data);
+  console.log(`${userId} is now connected`);
+};

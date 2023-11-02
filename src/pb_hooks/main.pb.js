@@ -9,15 +9,53 @@ routerAdd('GET', '/hello/:name', c => {
   return c.json(200, { message: counter.toString() + ' | Hello ' + name });
 });
 
-// onRealtimeDisconnectRequest(e => {
-//   console.log('====onRealTimeDisconnectRequest====');
-//   console.log('e.client keys');
-//   // console.log(`${Object.keys(e)}`);
-//   console.log('----------------');
-//   console.log('e.client.id():');
-//   console.log(e.client.id());
-//   console.log('----------------');
-// });
+onRealtimeDisconnectRequest(e => {
+  console.log('====onRealTimeDisconnectRequest====');
+  const clientId = e.client.id();
+  console.log(`${clientId} disconnected`)
+  const record = $app
+    .dao()
+    .findFirstRecordByData('user', 'client_id', clientId);
+
+  if (!record) return;
+
+  // Mark user as disconnected
+  record.set('is_connected', false);
+  $app.dao().saveRecord(record);
+
+  // Get session record
+  const userSession = record.getString('session_id');
+  const sessionRecord = $app.dao().findRecordById('session', userSession);
+
+  if (!sessionRecord)
+    console.log(
+      `User${record.id} was connected to a non existent session (${userSession})`
+    );
+
+  // Get session participants
+  const participantRecords = $app
+    .dao()
+    .findRecordsByFilter(
+      'user', // collection
+      `session_id = '${userSession}'`, // filter
+      '', // sort
+      0, // limit
+      0 // limit
+    )
+    .filter(v => v !== undefined);
+
+  const bothDisconnected = participantRecords
+    .map(p => p.getBool('is_connected'))
+    .every(v => v);
+
+  if (!bothDisconnected) return;
+
+  // Delete session record
+  $app.dao().deleteRecord(sessionRecord);
+
+  // Remove participants' session id
+  participantRecords.forEach(p => p.set('session_id', ''));
+});
 
 // onRealtimeConnectRequest(e => {
 //   console.log('====CONNECT====');
