@@ -1,6 +1,7 @@
 import pb from '../lib/pocketbase';
 import {
   Collections,
+  SessionResponse,
   UserRecord,
   UserResponse,
 } from '../types/pocketbase-types';
@@ -16,8 +17,9 @@ import {
 // };
 
 export const getSession = async (id: string) => {
-  const collection = pb.collection(Collections.User);
-  const user = await collection.getOne<UserResponse>(id);
+  console.log('get session:', id);
+  const collection = pb.collection(Collections.Session);
+  const session = await collection.getOne<SessionResponse>(id);
 
-  return user;
+  return session;
 };

@@ -18,7 +18,7 @@ const App = () => {
   useEffect(() => {
     if (!user) return;
     if (!user.session_id) return;
-
+    console.log('session id:', user.session_id);
     getSession(user.session_id)
       .then(session => {
         console.log('join back in session:', session);
