@@ -1,47 +1,112 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import useUser from './hooks/useUser';
+import { addUserInSession, getSession, leaveSession } from './services/session';
+import { SubscriptionCallback, watchSession } from './services/message';
+import { updateClientId } from './services/user';
 import pb from './lib/pocketbase';
 import { Collections } from './types/pocketbase-types';
-import { useParams } from 'react-router-dom';
-import { updateClientId, updateIsConnected } from './services/user';
-import useUser from './hooks/useUser';
 
 const Session = () => {
-  const { sessionId } = useParams();
+  const { sessionId, rejoined } = useParams();
   const { user } = useUser();
+  const navigate = useNavigate();
+  const [messages, setMessages] = useState<string[]>([]);
+  // const [count, setCount] = useState(0);
+  const [participants, setParticipants] = useState<string[] | null>(null);
+  // todo: fix callback not running on another tab
+  const [bothJoined, setBothJoined] = useState(!!rejoined);
 
+  const disconnect = useCallback(async () => {
+    if (!sessionId || !user) return;
+
+    await leaveSession(sessionId, user.id);
+    navigate('/');
+  }, [navigate, sessionId, user]);
+
+  // Get participants,m essages initial
   useEffect(() => {
+    if (!sessionId) return;
+
+    getSession(sessionId)
+      .then(data => {
+        const { messages, user1, user2 } = data;
+        const participants = [user1, user2];
+        console.log(
+          'set initial messages participants',
+          messages,
+          participants
+        );
+        setMessages(messages);
+        setParticipants(participants);
+      })
+      .catch(console.info);
+  }, [sessionId]);
+
+  // Subscribe to session
+  useEffect(() => {
+    if (!sessionId || !user) return;
+
     const doThis = async () => {
-      if (!sessionId || !user) return;
+      const callback: SubscriptionCallback = data => {
+        const { messages, user1, user2 } = data.record;
+        const participants = [user1, user2];
+        console.log('session subscription fires:', messages, participants);
+        if (participants.every(p => !!p) && participants.length >= 2)
+          setBothJoined(true);
 
-      const collection = pb.collection(Collections.Session);
+        setParticipants(participants);
+        setMessages(messages);
+        // setCount(0);
+      };
 
-      // Subscribe to session record
-      await collection
-        .subscribe(sessionId, data => {
-          console.log(data);
-          // Display message
-        })
-        .catch(console.info);
+      await watchSession(sessionId, callback);
+      console.log('watching session');
+      await updateClientId(user.id);
+      console.log('client id updated');
 
-      const clientId = pb.realtime.clientId;
+      // Add user to session
+      if (!sessionId || !user || !user.session_seat) return;
 
-      // Update users' record client id
-      updateClientId(user.id, clientId).catch(console.info);
+      const session = await getSession(sessionId);
+      const userExistInSession =
+        session.user1 === user.id || session.user2 === user.id;
 
-      // Mark user as connected
-      updateIsConnected(user.id, true).catch(console.info);
+      if (userExistInSession) {
+        // Show welcome back message
+        return;
+      }
+      // Show firs time welcome message
+      await addUserInSession(session, user.id, user.session_seat);
     };
 
-    void doThis();
+    doThis().catch(console.info);
 
     return () => {
-      pb.collection(Collections.Session)
-        .unsubscribe(sessionId)
-        .catch(console.info);
+      void pb.collection(Collections.Session).unsubscribe(sessionId);
     };
   }, [sessionId, user]);
 
-  return <div>Session component: {sessionId}</div>;
+  useEffect(() => {
+    if (participants === null) return;
+
+    if (bothJoined && participants.filter(p => !!p).length < 2) {
+      console.log('Stranger disconnected');
+      disconnect().catch(console.info);
+    }
+  }, [bothJoined, disconnect, navigate, participants]);
+
+  return (
+    <div className="flex flex-col gap-4">
+      <span>Session component: {sessionId}</span>
+      <span>User ud: {user?.id}</span>
+      <span>Messages: {messages.join(', ')}</span>
+      <span>Participants: {participants?.join(', ')}</span>
+      <button onClick={() => void disconnect()} className="btn btn-primary">
+        Disconnect
+      </button>
+    </div>
+  );
 };
 
 export default Session;

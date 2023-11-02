@@ -14,10 +14,14 @@ const router = createBrowserRouter([
     path: 's/:sessionId',
     element: <Session />,
   },
+  {
+    path: 's/:sessionId/:rejoined',
+    element: <Session />,
+  },
 ]);
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
+  // <React.StrictMode>
     <RouterProvider router={router} />
-  </React.StrictMode>
+  // </React.StrictMode>
 );

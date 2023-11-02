@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { UserRecord, UserResponse } from '../types/pocketbase-types';
+import { UserRecord } from '../types/pocketbase-types';
 import { AppData, getAppData, saveAppData } from '../services/appData';
 import { createUser, getUser } from '../services/user';
 
