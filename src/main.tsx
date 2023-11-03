@@ -4,11 +4,17 @@ import App from './App.tsx';
 import './index.css';
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 import Session from './Session.tsx';
+import Home from './pages/Home.tsx';
+import Chat from './pages/Chat.tsx';
 
 const router = createBrowserRouter([
   {
     path: '/',
-    element: <App />,
+    element: <Home />,
+  },
+  {
+    path: '/chat',
+    element: <Chat />,
   },
   {
     path: 's/:sessionId',
