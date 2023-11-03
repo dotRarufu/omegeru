@@ -1,10 +1,28 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Badge from './Badge';
+import { updateInterest } from '../services/user';
+import useUser from '../hooks/useUser';
 
 const Interests = () => {
+  const { user } = useUser();
   const [interestTick, setInterestTick] = useState(false);
-  const [interests, setInterests] = useState<string[]>(['Web dev']);
+  const [interests, setInterests] = useState<string[]>([]);
   const [value, setValue] = useState('');
+
+  // Set user's interests
+  useEffect(() => {
+    if (!user) return;
+
+    const interests = user.interests as string[];
+    setInterests(interests);
+  }, [user]);
+
+  // Sync interests to db
+  useEffect(() => {
+    if (!user || !interestTick) return;
+
+    updateInterest(user.id, interests).catch(console.info);
+  }, [interestTick, interests, user]);
 
   const handleAddInterest = () => {
     const newInterests = [...interests, value];

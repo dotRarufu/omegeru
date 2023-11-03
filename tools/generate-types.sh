@@ -2,8 +2,8 @@
 
 source .env
 
-echo $INSTANCE_ADDRESS
-echo $ADMIN_EMAIL
-echo $ADMIN_PASSWORD
+echo $VITE_INSTANCE_ADDRESS
+echo $VITE_ADMIN_EMAIL
+echo $VITE_ADMIN_PASSWORD
 
-npx pocketbase-typegen --url $INSTANCE_ADDRESS --email $ADMIN_EMAIL --password $ADMIN_PASSWORD --out src/types/pocketbase-types.ts
+npx pocketbase-typegen --url $VITE_INSTANCE_ADDRESS --email $VITE_ADMIN_EMAIL --password $VITE_ADMIN_PASSWORD --out src/types/pocketbase-types.ts

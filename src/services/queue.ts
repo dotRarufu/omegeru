@@ -15,8 +15,11 @@ export const createQueuedUser = async (id: string) => {
   return res.id;
 };
 
-export const deleteQueuedUser = async (id: string) => {
+export const deleteQueuedUser = async (userId: string) => {
   const collection = pb.collection(Collections.QueuedUser);
+  const queueId = (
+    await collection.getList(1, 1, { filter: `user = '${userId}'` })
+  ).items[0].id;
 
-  await collection.delete(id);
+  await collection.delete(queueId);
 };
