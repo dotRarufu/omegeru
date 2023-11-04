@@ -7,7 +7,8 @@
     "dev": "vite --host",
     "build": "tsc && vite build",
     "generate-types": "./tools/generate-types.sh",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "pb-dev": "sudo ./pocketbase/pocketbase serve"
   },
   "dependencies": {
     "@types/secure-random-password": "^0.2.2",

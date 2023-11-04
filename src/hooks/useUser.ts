@@ -3,7 +3,7 @@ import { UserRecord } from '../types/pocketbase-types';
 import { AppData, getAppData, saveAppData } from '../services/appData';
 import { createUser, getUser } from '../services/user';
 
-type User = (UserRecord & { id: string }) | null;
+export type User = (UserRecord & { id: string }) | null;
 
 const useUser = () => {
   const [user, setUser] = useState<User>(null);
@@ -36,7 +36,9 @@ const useUser = () => {
         setAppData({ userId: user.id });
         setUser(user);
       })
-      .catch(console.info);
+      .catch(_ => {
+        console.log("Failed to get user: " + appData.userId)
+      });
     // Run only once
   }, []);
 

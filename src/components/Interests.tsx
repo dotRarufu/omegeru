@@ -14,7 +14,7 @@ const Interests = () => {
     if (!user) return;
 
     const interests = user.interests as string[];
-    setInterests(interests);
+    setInterests(interests || []);
   }, [user]);
 
   // Sync interests to db
