@@ -7,6 +7,7 @@ import {
   UserResponse,
 } from '../types/pocketbase-types';
 import { RecordSubscription } from 'pocketbase';
+import { User } from '../hooks/useUser';
 
 export const createUser = async () => {
   const collection = pb.collection(Collections.User);
@@ -28,11 +29,14 @@ export const getUser = async (id: string) => {
   return user;
 };
 
-export const updateClientId = async (userId: string) => {
+export const updateClientId = async (userId: string, user: User) => {
   const clientId = pb.realtime.clientId;
   const collection = pb.collection(Collections.User);
-  const data: Pick<UserRecord, 'client_id'> = {
+  const data: UserRecord = {
     client_id: clientId,
+    interests: user?.interests || [null],
+    session_id: user?.session_id || '',
+    session_seat: user?.session_seat,
   };
   await collection.update<UserResponse>(userId, data);
 };
@@ -55,10 +59,13 @@ export const updateInterest = async (userId: string, interests: string[]) => {
 
 export const watchUser = async (
   userId: string,
-  callback: (data: RecordSubscription<UserRecord>) => void
+  callback: (data: RecordSubscription<UserResponse>) => void
 ) => {
   const collection = pb.collection(Collections.User);
-  const unsubscribe = await collection.subscribe<UserRecord>(userId, callback);
+  const unsubscribe = await collection.subscribe<UserResponse>(
+    userId,
+    callback
+  );
 
   return unsubscribe;
 };

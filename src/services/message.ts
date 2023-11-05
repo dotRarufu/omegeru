@@ -40,11 +40,16 @@ export const getMessages = async (messagesId: string[]) => {
   return messages;
 };
 
-export const createJoinSessionMessage = async (sessionId: string) => {
+const SYSTEM_USER_ID = 't66d1o8ktgkz40p';
+
+export const createJoinSessionMessage = async (
+  sessionId: string,
+  userId: string
+) => {
   const data: MessageRecord = {
-    content: 'A user has joined the chat',
+    content: userId + ' has joined the chat',
     // todo: add to constants
-    sender: 't66d1o8ktgkz40p',
+    sender: SYSTEM_USER_ID,
   };
   const newMessage = await collection.create(data);
   const oldMessages = (await getSession(sessionId)).messages;
@@ -58,7 +63,7 @@ export const createQuitSessionMessage = async (sessionId: string) => {
   const data: MessageRecord = {
     content: 'A user has left the chat',
     // todo: add to constants
-    sender: 't66d1o8ktgkz40p',
+    sender: SYSTEM_USER_ID,
   };
   const newMessage = await collection.create(data);
   const oldMessages = (await getSession(sessionId)).messages;
@@ -89,5 +94,4 @@ export const sendMessage = async (
   await sessionCollection.update(sessionId, {
     messages,
   });
-  console.log('send message:', messages);
 };

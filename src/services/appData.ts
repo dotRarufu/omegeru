@@ -1,17 +1,18 @@
 export type AppData = {
   userId: string;
+  sessionId: string | null;
 };
 
 const AppDataStorageKey = 'OmegeruAppData';
 
 export const getAppData = () => {
   const stringified = localStorage.getItem(AppDataStorageKey);
-  let appData: AppData = { userId: '' };
 
-  if (stringified === null) return appData;
+  // todo: deal with falsy values
+  // let appData: AppData = { userId: '', sessionId: null };
+  if (!stringified) return null;
 
-  appData = JSON.parse(stringified) as AppData;
-
+  const appData = JSON.parse(stringified) as AppData;
   return appData;
 };
 

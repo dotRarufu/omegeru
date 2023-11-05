@@ -1,28 +1,37 @@
 import { useEffect, useState } from 'react';
-import { UserRecord } from '../types/pocketbase-types';
+import {
+  Collections,
+  UserRecord,
+  UserResponse,
+} from '../types/pocketbase-types';
 import { AppData, getAppData, saveAppData } from '../services/appData';
-import { createUser, getUser } from '../services/user';
+import { createUser, getUser, watchUser } from '../services/user';
+import { RecordSubscription } from 'pocketbase';
+import pb from '../lib/pocketbase';
 
 export type User = (UserRecord & { id: string }) | null;
 
 const useUser = () => {
   const [user, setUser] = useState<User>(null);
   // Get app data from localStorage
-  const [appData, setAppData] = useState<AppData>(getAppData());
+  const [appData, setAppData] = useState<AppData | null>(getAppData());
 
   // Sync memory data to local storage
   useEffect(() => {
-    saveAppData(appData);
-  }, [appData]);
+    if (!user) return;
+    const newAppData = { sessionId: user.session_id || null, userId: user.id };
+    saveAppData(newAppData);
+  
+  }, [user]);
 
   // Get or create user
   useEffect(() => {
-    if (appData === null) return;
-    if (!appData.userId) {
+    if (appData === null) {
       // todo: handle error
+
       createUser()
         .then(user => {
-          setAppData({ userId: user.id });
+          setAppData({ userId: user.id, sessionId: null });
           setUser(user);
         })
         .catch(console.info);
@@ -30,15 +39,36 @@ const useUser = () => {
       return;
     }
 
-    // todo: handle error
+    // Set initial user (callback does not immediately run)
     getUser(appData.userId)
-      .then(user => {
-        setAppData({ userId: user.id });
-        setUser(user);
+      .then(initial => {
+        setUser(initial);
+
+        // todo: handle error
+        const callback = (data: RecordSubscription<UserResponse>) => {
+          const {
+            record: { client_id, id, interests, session_id, session_seat },
+          } = data;
+
+          const newUser: User = {
+            id,
+            client_id,
+            interests,
+            session_id,
+            session_seat,
+          };
+          setUser(newUser);
+          setAppData({ ...appData, sessionId: session_id });
+        };
+
+        watchUser(appData.userId, callback).catch(console.info);
       })
-      .catch(_ => {
-        console.log("Failed to get user: " + appData.userId)
-      });
+      .catch(console.info);
+
+    return () => {
+      void pb.collection(Collections.User).unsubscribe(appData.userId);
+    };
+
     // Run only once
   }, []);
 

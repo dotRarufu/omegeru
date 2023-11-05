@@ -1,10 +1,13 @@
 import { useEffect, useState } from 'react';
 import Badge from './Badge';
 import { updateInterest } from '../services/user';
-import useUser from '../hooks/useUser';
+import useUser, { User } from '../hooks/useUser';
 
-const Interests = () => {
-  const { user } = useUser();
+type Props = {
+  user: User
+}
+
+const Interests = ({user}: Props) => {
   const [interestTick, setInterestTick] = useState(false);
   const [interests, setInterests] = useState<string[]>([]);
   const [value, setValue] = useState('');

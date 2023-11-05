@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import useUser from './hooks/useUser';
-import { addUserInSession, getSession, leaveSession } from './services/session';
+import { getSession } from './services/session';
 import { SubscriptionCallback, watchSession } from './services/message';
 import { updateClientId } from './services/user';
 import pb from './lib/pocketbase';
@@ -19,7 +19,7 @@ const Session = () => {
   const disconnect = useCallback(async () => {
     if (!sessionId || !user) return;
 
-    await leaveSession(sessionId, user.id);
+    // await leaveSession(sessionId, user.id);
     navigate('/');
   }, [navigate, sessionId, user]);
 
@@ -56,7 +56,7 @@ const Session = () => {
 
       await watchSession(sessionId, callback);
 
-      await updateClientId(user.id);
+      // await updateClientId(user.id);
 
       // Add user to session
       if (!sessionId || !user || !user.session_seat) return;
@@ -70,7 +70,7 @@ const Session = () => {
         return;
       }
       // Show firs time welcome message
-      await addUserInSession(session, user.id, user.session_seat);
+      // await addUserInSession(session, user.id, user.session_seat);
     };
 
     doThis().catch(console.info);

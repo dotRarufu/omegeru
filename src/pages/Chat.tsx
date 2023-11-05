@@ -23,6 +23,7 @@ const STATES: {
 };
 
 // todo:
+// fix connection messages
 // queue by interest
 // limit 1 message per 5 second, refactor might fix this
 
@@ -34,10 +35,12 @@ const Chat = () => {
   const { joinQueue, leaveQueue } = useQueue({
     user,
     onRejoin: setSessionId,
-    onJoin: setSessionId,
+    onJoin: s => {
+      setSessionId(s);
+    },
   });
-  // console.log('chat comp renders');
-  const { disconnect, messages } = useSession({
+ 
+  const { disconnect, messagesData } = useSession({
     user,
     sessionId,
     onJoin: () => setState(STATES.inSession),
@@ -86,10 +89,10 @@ const Chat = () => {
       <Header small />
 
       {/* // todo: move user props in context */}
-      <Messages messagesId={messages} user={user} />
+      <Messages data={messagesData}  />
 
-      {state === STATES.disconnected ||
-        (state === STATES.queueCanceled && <Interests />)}
+      {(state === STATES.disconnected ||
+        state === STATES.queueCanceled) && <Interests user={user}/>}
       {state === STATES.inQueue && (
         <div className="text-primary text-sm">Finding a stranger</div>
       )}
